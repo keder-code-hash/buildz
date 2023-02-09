@@ -52,6 +52,7 @@ class MessageSeenSerializer(serializers.ModelSerializer):
             message_seen_object = MessageSeenMetric.objects.get(room_id=room_id,sender=sender,receiver=receiver)
             seen_count = message_seen_object.opening_count
             message_seen_object.opening_count=seen_count+1
+            message_seen_object.message_seen_count=0
             message_seen_object.save()
             return message_seen_object
         return super().create(validated_data)

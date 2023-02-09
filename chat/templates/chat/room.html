@@ -894,15 +894,16 @@ button:focus {
 
       chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
+        console.log("xxxx")
         console.log(data)
         const receiver = window.localStorage.getItem('receiver');
         const sender = window.localStorage.getItem("sender");
         console.log(sender,data.sender,receiver,data.receiver)
         if(sender===data.sender && receiver==data.receiver){
-          $("#chatmessagelistreal").append("<li class='repaly'><p>"+data.message+"</p><span class='time'>just now</span></li>")
+          $("#chatmessagelistreal").append("<li class='repaly'><p>"+data.message+"</p><img height='10px' width='10px'  style='border - radius: 50 %;' src='http://127.0.0.1:8000/static/seen_image/single_right.png'><span class='time'>just now</span></li>")
         }
         if(receiver==data.sender && sender==data.receiver){
-          $("#chatmessagelistreal").append("<li class='sender'><p>"+data.message+"</p><span class='time'>just now</span></li>")
+          $("#chatmessagelistreal").append("<li class='sender'><p>"+data.message+"</p><img src='http://127.0.0.1:8000/static/seen_image/single_right.png'><span class='time'>just now</span></li>")
         }
       };
 

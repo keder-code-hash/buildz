@@ -39,6 +39,7 @@ class MessageSeenMetric(models.Model):
 
     message_seen_by = models.CharField(max_length=255,blank=True,null=True)
     message_seen_at = models.DateTimeField(auto_now_add=True)
+    message_seen_count = models.IntegerField()
     
     deleted_status = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

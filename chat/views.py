@@ -15,6 +15,7 @@ import json
 from PIL import Image
 import os
 from django.http import HttpResponse
+from datetime import datetime
 
 
 def index(request):
@@ -84,11 +85,27 @@ class MessageSeenView(generics.GenericAPIView):
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         valid_image=""
         try:
-            message_seen = MessageSeenMetric.objects.get(room_id=room_id,sender=sender,receiver=receiver,message_id=message_id)
-            messag
-            valid_image = message_seen.image_link
+            # 1. checking DB with same room_id and reverse sender,receiver, If (exists and seen count is 1
+            #       then added message seen by to the current sender and increase the message seen count by 1
+            #       now if meddage seen by is already there then skip the increaing step and just loaded the 
+            #       image link image) Else set the sending status as not delivered and sending an error message or return 
+            #       the image link as single tick by creating a new record.
+            message_seen = MessageSeenMetric.objects.get(room_id=room_id,sender=receiver,receiver=sender,message_id=message_id)
+            if message_seen.opening_count <1:
+                return HttpResponse("Data does not exist")
+            if message_seen.message_seen_by !='' and message_seen.message_seen_count>=1:
+                # message is read by other end
+                seen_count = message_seen.message_seen_count
+                seen_by = message_seen.message_seen_by
+                message_seen.message_seen_by=seen_by
+                message_seen.message_seen_count=seen_count+1
+                message_seen.message_seen_at=datetime.now()
+                message_seen.image_link = valid_image = os.path.join(BASE_DIR,'static','seen_image','double_blue_right.png')
+                message_seen.save()
+            else:
+                valid_image = message_seen.image_link
         except MessageSeenMetric.DoesNotExist:
-            valid_image = os.path.join(BASE_DIR,'static','seen_image','double_right.png')
+            valid_image = os.path.join(BASE_DIR,'static','seen_image','single_right.png')
         
         try:
             with open(valid_image, "rb") as f:

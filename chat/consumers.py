@@ -29,7 +29,7 @@ class ChatConsumer(WebsocketConsumer):
         text_data_json = json.loads(text_data)
         serializer = MessageSerializer(data=text_data_json)
         serializer.is_valid(raise_exception=True)
-        message = serializer.save()
+        saved_message = serializer.save()
         # creating message seen metrics record for tracking message seen record
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         valid_image = os.path.join(BASE_DIR,'static','seen_image','double_right.png')
@@ -38,28 +38,29 @@ class ChatConsumer(WebsocketConsumer):
             'sender' :text_data_json.get('sender',None),
             'receiver' :text_data_json.get('receiver',None),
             'message_status' :'DOUBLE_TICK',
-            'message_id' :message.id,
+            'message_id' :saved_message.id,
             'image_link':valid_image,
             'opening_count':1,
             'sender_ip' :'',
             'receiver_ip' :'',
+            'message_seen_count':0
         }
         message_seen_serializer = MessageSeenSerializer(data=messsage_seen_metric)
         message_seen_serializer.is_valid(raise_exception=True)
         message_seen_serializer.save()
 
-        print(self)
-        # print(text_data_json)
+        # print(self)
+        # # print(text_data_json)
         message = text_data_json["message"] 
         
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "chat_message", "message": message,'receiver': text_data_json.get('receiver'), 'sender': text_data_json.get('sender')}
+            self.room_group_name, {"type": "chat_message", "message": message,'receiver': text_data_json.get('receiver'), 'sender': text_data_json.get('sender'),"message_id":saved_message.id}
         )
 
     # Receive message from room group
     def chat_message(self, event):
         message = event["message"]
-        # print(event)
+        print(event)
         # Send message to WebSocket
-        self.send(text_data=json.dumps({"message": message,'receiver': event.get('receiver'), 'sender': event.get('sender')}))
+        self.send(text_data=json.dumps({"message": message,'receiver': event.get('receiver'), 'sender': event.get('sender'),"message_id":event.get('message_id')}))
