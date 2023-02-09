@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User List</title>
+    <link
+      href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <script
+      src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
+      type="text/javascript"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"
+      integrity="sha256-/H4YS+7aYb9kJ5OKhFYPUjSJdrtV6AeyJOtTkw6X72o="
+      crossorigin="anonymous"
+    ></script>
+    <script src="{% static 'md5.js' %}"></script>
+  </head>
+  <style>
+    .message {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+  <body>
+    <div
+      class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gray-50 py-6 sm:py-12"
+    >
+      <img
+        src="/img/beams.jpg"
+        alt=""
+        class="absolute top-1/2 left-1/2 max-w-none -translate-x-1/2 -translate-y-1/2"
+        width="1308"
+      />
+      <div
+        class="absolute inset-0 bg-[url(/img/grid.svg)] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"
+      ></div>
+
+      <!-- user lists in django  -->
+      {% for user in users %}
+      <div class="relative flex w-72 gap-3 rounded-lg bg-white p-3 shadow-xl">
+        <div class="relative h-12 w-12 shrink-0">
+          <div
+            class="absolute bottom-1 right-0 h-2 w-2 rounded-xl bg-green-600"
+          ></div>
+          <img
+            class="h-12 w-12 rounded-full object-cover object-center"
+            src="https://images.unsplash.com/photo-1585728748176-455ac5eed962?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8aGlqYWJ8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60"
+            alt=""
+          />
+        </div>
+        <div class="overflow-hidden">
+          <h2 class="font-semibold">{{ user.username }}</h2>
+          <p class="message text-sm text-slate-500">{{ user.email }}</p>
+        </div>
+        <div
+          class="flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-full bg-indigo-500 ring-indigo-300 ring-offset-2 transition-all duration-300 hover:bg-indigo-600 focus:outline-none focus:ring-2"
+          role="button"
+          aria-label="Call  My wife "
+          tabindex="1"
+          onclick="createChatRoom('{{user.username}}','{{user.email}}')"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="bi bi-envelope"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"
+            />
+          </svg>
+        </div>
+      </div>
+      <br />
+      {% endfor %}
+    </div>
+
+    <br />
+    <script>
+      function createChatRoom(userName, userEmail) {
+        const userToken = window.localStorage.getItem("token");
+        if (userToken === null || userToken === undefined) {
+          window.location.pathname = "chat/login";
+        }
+        var senderHash = window.localStorage.getItem("hash");
+        var roomName = MD5(senderHash + "_" + userEmail);
+
+        $.ajax({
+          url: "http://" + "{{current_host}}" + "/chat/room/createroom",
+          type: "POST",
+          data: JSON.stringify({
+            receiver: userEmail,
+            sender: userToken,
+            room_id: roomName,
+          }),
+          processData: false,
+          contentType: "application/json",
+          success: function (result) {
+            // send an jax request to fetch the room name properly separately
+            window.localStorage.setItem("room", result.data.room_id);
+            // console.log(result);
+            window.location.pathname = "chat/" + result.data.room_id + "/";
+            // console.log("chat/" + result.data.room_id + "/");
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

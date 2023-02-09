@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'authentication.User'
 # Application definition
-
+TIME_ZONE = 'Asia/Kolkata'
 INSTALLED_APPS = [
     'daphne',
     'django.contrib.admin',
@@ -68,7 +68,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'chat.queryauthmiddleware.QueryAuthMiddleware'
 ]
 
 ROOT_URLCONF = 'buildz.urls'
@@ -178,7 +177,7 @@ from datetime import timedelta
 ...
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -219,3 +218,4 @@ CHANNEL_LAYERS = {
         },
     },
 }
+STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
